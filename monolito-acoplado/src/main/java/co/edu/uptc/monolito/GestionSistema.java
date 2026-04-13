@@ -13,9 +13,16 @@ public class GestionSistema {
     public GestionSistema() {
         this.productos = persistencia.cargar();
         this.usuarios = persistencia.cargarUsuarios();
+        this.pedidos = persistencia.cargarPedidos();
     }
     
     public void crearUsuario(int id, String nombre, double saldo) {
+        for (Usuario u : usuarios) {
+            if (u.id == id) {
+                System.out.println("Error: El ID de usuario " + id + " ya existe.");
+                return;
+            }
+        }
         Usuario nuevo = new Usuario(id, nombre, saldo);
         usuarios.add(nuevo);
         persistencia.guardarUsuario(nuevo);
@@ -23,13 +30,20 @@ public class GestionSistema {
     }
     
 
-    public void eliminarUsuario(int id) { // aquí mismo borramos sus pedidos.
+    public void eliminarUsuario(int id) { 
         usuarios.removeIf(usuario -> usuario.id == id);
         pedidos.removeIf(pedido -> pedido.idUsuario == id);
         System.out.println("Usuario e historial de pedidos eliminados.");
     }
 
     public void realizarPedido(int idPedido, int idProducto, int idUsuario, int tipoEstado) {
+        for (Pedido p : pedidos) {
+            if (p.id == idPedido) {
+                System.out.println("Error: El ID de pedido " + idPedido + " ya existe.");
+                return;
+            }
+        }
+
         Producto productoEncontrado = null;
         for (Producto p : productos) {
             if (p.id == idProducto) {
@@ -55,16 +69,20 @@ public class GestionSistema {
                     if (tipoEstado == 1) {
                         estado = "PENDIENTE";
                     } else if (tipoEstado == 2) {
-                        estado = pagarPedido(idPedido, idUsuario, "PAGADO"); 
+                        estado = "PAGADO"; 
                     } else {
                         estado = "DESCONOCIDO";
                     }
 
                     Pedido p = new Pedido(idPedido, descripcion, idUsuario, total, estado);
                     
-                    u.saldo -= total; 
-                    persistencia.actualizarUsuario(u); // Persistir el cambio de saldo
+                    if ("PAGADO".equals(estado)) {
+                        u.saldo -= total;
+                        persistencia.actualizarUsuario(u);
+                    }
+
                     pedidos.add(p);
+                    persistencia.guardarPedido(p);
                     System.out.println("Pedido creado con estado: " + estado + " para el producto: " + descripcion);
                 } else {
                     System.out.println("Señor(a) " + u.nombre + ", su saldo es insuficiente.");
@@ -79,38 +97,39 @@ public class GestionSistema {
         for (Pedido p : pedidos) {
             if (p.id == idPedido) {
                 p.estado = nuevoEstado;
+                persistencia.actualizarPedido(p);
                 System.out.println("El estado del pedido " + idPedido + " fue actualizado a " + nuevoEstado);
+                return;
             }
         }
     }
 
-    public String pagarPedido(int idPedido, int idUsuario, String nuevoEstado) {
-        if ("PAGADO".equals(nuevoEstado)) {
-            for (Usuario u : usuarios) {
-                if (u.id == idUsuario) {
-                    for (Pedido p : pedidos) {
-                        if (p.id == idPedido && p.estado.equals("PENDIENTE")) {
-                            if (u.saldo >= p.total) {
-                                u.saldo -= p.total;
-                                persistencia.actualizarUsuario(u); // Persistir el cambio de saldo
-                                p.estado = "PAGADO";
-                                System.out.println("El pedido " + idPedido + " ha sido pagado.");
-                                nuevoEstado = "PAGADO";
-                            } else {
-                                System.out.println("Saldo insuficiente para pagar el pedido.");
-                                nuevoEstado = "PENDIENTE";
-                            }
-                            return nuevoEstado;
-                        }
-                    }
-                    
-                    return nuevoEstado;
+    public void pagarPedido(int idPedido) {
+        for (Pedido p : pedidos) {
+            if (p.id == idPedido) {
+                if ("PAGADO".equals(p.estado)) {
+                    System.out.println("El pedido ya está pagado.");
+                    return;
                 }
+                for (Usuario u : usuarios) {
+                    if (u.id == p.idUsuario) {
+                        if (u.saldo >= p.total) {
+                            u.saldo -= p.total;
+                            p.estado = "PAGADO";
+                            persistencia.actualizarUsuario(u);
+                            persistencia.actualizarPedido(p);
+                            System.out.println("El pedido " + idPedido + " ha sido pagado.");
+                        } else {
+                            System.out.println("Saldo insuficiente para pagar el pedido.");
+                        }
+                        return;
+                    }
+                }
+                System.out.println("Usuario del pedido no encontrado.");
+                return;
             }
-        } else {
-            System.out.println("El estado del pedido no es válido para pago.");
         }
-        return nuevoEstado;
+        System.out.println("Pedido no encontrado.");
     }
 
     public void reporteGeneral() {
@@ -119,7 +138,7 @@ public class GestionSistema {
             System.out.print("Usuario: " + u.nombre + " | Pedidos: ");
             for (Pedido p : pedidos) {
                 if (p.idUsuario == u.id) {
-                    System.out.print("[" + p.id + ": $" + p.total + "] ");
+                    System.out.print("[" + p.id + ": " + p.estado + " - $" + p.total + "] ");
                 }
             }
             System.out.println();
@@ -127,6 +146,12 @@ public class GestionSistema {
     }
 
     public void registrarProducto(int id, String nombre, double precio) {
+        for (Producto p : productos) {
+            if (p.id == id) {
+                System.out.println("Error: El ID de producto " + id + " ya existe.");
+                return;
+            }
+        }
         Producto p = new Producto(id, nombre, precio);
         productos.add(p);
         persistencia.guardar(p);

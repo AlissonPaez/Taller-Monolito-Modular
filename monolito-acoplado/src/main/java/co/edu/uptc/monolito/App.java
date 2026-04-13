@@ -38,14 +38,9 @@ public class App {
                     break;
                 
                 case 3:
-                    System.out.println("Ingrese el ID del usuario que desea pagar su pedido: ");
-                    int idUsuario = sc.nextInt();
-                    System.out.print("Ingrese el ID del pedido a actualizar: ");
+                    System.out.print("Ingrese el ID del pedido a pagar: ");
                     int idPedidoActualizar = sc.nextInt();
-                    System.out.print("Ingrese el nuevo estado (PENDIENTE/PAGADO): ");
-                    String nuevoEstado = sc.next();
-                    nuevoEstado = sistema.pagarPedido(idPedidoActualizar, idUsuario, nuevoEstado);
-                    System.out.println("El nuevo estado del pedido es: " + nuevoEstado);
+                    sistema.pagarPedido(idPedidoActualizar);
                     break;
 
                 case 4:
