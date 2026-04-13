@@ -1,9 +1,5 @@
 package co.edu.uptc.monolito;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
     public static void main( String[] args )

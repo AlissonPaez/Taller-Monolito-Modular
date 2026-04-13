@@ -11,4 +11,13 @@ public class Usuario {
         this.saldo = saldo;
     }
 
+    @Override
+    public String toString() {
+        return id + "," + nombre + "," + saldo;
+    }
+
+    public static Usuario fromString(String line) {
+        String[] parts = line.split(",");
+        return new Usuario(Integer.parseInt(parts[0]), parts[1], Double.parseDouble(parts[2]));
+    }
 }

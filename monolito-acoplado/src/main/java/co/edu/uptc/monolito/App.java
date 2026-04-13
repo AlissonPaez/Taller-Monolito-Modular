@@ -12,9 +12,11 @@ public class App {
             System.out.println("\n--- Menú de Opciones---");
             System.out.println("1. Registrar Usuario");
             System.out.println("2. Crear Pedido ");
-            System.out.println("3. Ver Reporte General");
-            System.out.println("4. Eliminar Usuario y sus Pedidos");
-            System.out.println("5. Salir");
+            System.out.println("3. Realizar pago de pedido");
+            System.out.println("4. Ver Reporte General");
+            System.out.println("5. Eliminar Usuario y sus Pedidos");
+            System.out.println("6. Gestión de Productos");
+            System.out.println("7. Salir");
             System.out.print("Seleccione una opción: ");
             opcion = sc.nextInt();
 
@@ -28,33 +30,73 @@ public class App {
 
                 case 2:
                     System.out.print("Ingrese el ID del pedido: "); int idP = sc.nextInt();
-                    System.out.print("Ingrese la descripción: "); sc.nextLine(); // Limpiar buffer
-                    String desc = sc.nextLine();
+                    System.out.print("Ingrese el ID del producto: "); int idProdOrder = sc.nextInt();
                     System.out.print("Ingrese el ID del usuario: "); int idUsu = sc.nextInt();
-                    System.out.print("Ingrese el total del pedido: "); double total = sc.nextDouble();
                     System.out.print("Ingrese el estado (1:Pendiente, 2:Pagado): "); int est = sc.nextInt();
 
-                    sistema.realizarPedido(idP, desc, idUsu, total, est);
+                    sistema.realizarPedido(idP, idProdOrder, idUsu, est);
                     break;
-
+                
                 case 3:
-                    sistema.reporteGeneral();
+                    System.out.println("Ingrese el ID del usuario que desea pagar su pedido: ");
+                    int idUsuario = sc.nextInt();
+                    System.out.print("Ingrese el ID del pedido a actualizar: ");
+                    int idPedidoActualizar = sc.nextInt();
+                    System.out.print("Ingrese el nuevo estado (PENDIENTE/PAGADO): ");
+                    String nuevoEstado = sc.next();
+                    nuevoEstado = sistema.pagarPedido(idPedidoActualizar, idUsuario, nuevoEstado);
+                    System.out.println("El nuevo estado del pedido es: " + nuevoEstado);
                     break;
 
                 case 4:
+                    sistema.reporteGeneral();
+                    break;
+
+                case 5:
                     System.out.print("Ingrese el ID del usuario a eliminar: ");
                     int idEliminar = sc.nextInt();
                     sistema.eliminarUsuario(idEliminar);
                     break;
 
-                case 5:
+                case 6:
+                    System.out.println("\n--- Gestión de Productos ---");
+                    System.out.println("1. Registrar Producto");
+                    System.out.println("2. Actualizar Producto");
+                    System.out.println("3. Eliminar Producto");
+                    System.out.println("4. Listar Productos");
+                    System.out.print("Seleccione: ");
+                    int subOpcion = sc.nextInt();
+                    switch (subOpcion) {
+                        case 1:
+                            System.out.print("ID: "); int idProd = sc.nextInt();
+                            System.out.print("Nombre: "); String nomProd = sc.next();
+                            System.out.print("Precio: "); double preProd = sc.nextDouble();
+                            sistema.registrarProducto(idProd, nomProd, preProd);
+                            break;
+                        case 2:
+                            System.out.print("ID del producto a actualizar: "); int idUp = sc.nextInt();
+                            System.out.print("Nuevo Nombre: "); String nomUp = sc.next();
+                            System.out.print("Nuevo Precio: "); double preUp = sc.nextDouble();
+                            sistema.actualizarProducto(idUp, nomUp, preUp);
+                            break;
+                        case 3:
+                            System.out.print("ID del producto a eliminar: "); int idDel = sc.nextInt();
+                            sistema.eliminarProducto(idDel);
+                            break;
+                        case 4:
+                            sistema.listarProductos();
+                            break;
+                    }
+                    break;
+
+                case 7:
                     System.out.println("Saliendo...");
                     break;
 
                 default:
                     System.out.println("Opción no válida.");
             }
-        } while (opcion != 5);
+        } while (opcion != 7);
 
         sc.close();
     }
