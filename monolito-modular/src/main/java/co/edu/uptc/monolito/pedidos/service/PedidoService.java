@@ -4,6 +4,8 @@ import co.edu.uptc.monolito.pedidos.model.Pedido;
 import co.edu.uptc.monolito.pedidos.persistence.PedidoPersistence;
 import co.edu.uptc.monolito.usuarios.service.IUsuarioService;
 import co.edu.uptc.monolito.usuarios.model.Usuario;
+import co.edu.uptc.monolito.productos.service.IProductoService;
+import co.edu.uptc.monolito.productos.model.Producto;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,14 +13,16 @@ public class PedidoService implements IPedidoService {
     private List<Pedido> pedidos;
     private PedidoPersistence persistence = new PedidoPersistence();
     private IUsuarioService usuarioService;
+    private IProductoService productoService;
 
-    public PedidoService(IUsuarioService usuarioService) {
+    public PedidoService(IUsuarioService usuarioService, IProductoService productoService) {
         this.pedidos = persistence.cargar();
         this.usuarioService = usuarioService;
+        this.productoService = productoService;
     }
 
     @Override
-    public void crearPedido(int id, String descripcion, int idUsuario, double total, String estado) {
+    public void crearPedido(int id, int idProducto, int cantidad, int idUsuario, String estado) {
         if (existePedido(id)) {
             System.out.println("Error: El ID de pedido " + id + " ya existe.");
             return;
@@ -29,6 +33,15 @@ public class PedidoService implements IPedidoService {
             System.out.println("Error: El usuario " + idUsuario + " no existe.");
             return;
         }
+
+        Producto pObj = productoService.obtenerPorId(idProducto);
+        if (pObj == null) {
+            System.out.println("Error: El producto " + idProducto + " no existe.");
+            return;
+        }
+
+        double total = pObj.precio * cantidad;
+        String descripcion = pObj.nombre + " x" + cantidad;
 
         if ("PAGADO".equals(estado)) {
             if (u.saldo >= total) {
@@ -42,7 +55,7 @@ public class PedidoService implements IPedidoService {
         Pedido p = new Pedido(id, descripcion, idUsuario, total, estado);
         pedidos.add(p);
         persistence.guardar(p);
-        System.out.println("Pedido creado en módulo modular.");
+        System.out.println("Pedido creado con producto #" + idProducto + " en módulo modular.");
     }
 
     @Override
