@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Persistencia {
-    private String path = "C:/Users/Kimberly Figueroa/Documents/9 semestre/Ing. Software II/Taller-Monolito-Modular/monolito-acoplado/src/main/java/co/edu/uptc/monolito/";
+    private String path = "src/main/java/co/edu/uptc/monolito/";
     private String fileName = path + "productos.txt";
     private String userFileName = path + "usuarios.txt";
     private String orderFileName = path + "pedidos.txt";

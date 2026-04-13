@@ -14,10 +14,15 @@ import co.edu.uptc.monolito.pagos.model.Pago;
 
 public class PersistenciaPago {
  
-   private String paymentFileName = "pagos.txt";
+   private String path = "src/main/java/co/edu/uptc/monolito/pagos/persistence/";
+   private String paymentFileName = path + "pagos.txt";
 
    public PersistenciaPago() {
     try {
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         File pFile = new File(paymentFileName);
         if (!pFile.exists()) {
             pFile.createNewFile();
