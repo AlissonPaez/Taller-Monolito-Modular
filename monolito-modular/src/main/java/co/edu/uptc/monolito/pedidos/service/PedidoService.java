@@ -1,24 +1,28 @@
 package co.edu.uptc.monolito.pedidos.service;
 
-import co.edu.uptc.monolito.pedidos.model.Pedido;
-import co.edu.uptc.monolito.pedidos.persistence.PedidoPersistence;
-import co.edu.uptc.monolito.usuarios.service.IUsuarioService;
-import co.edu.uptc.monolito.usuarios.model.Usuario;
-import co.edu.uptc.monolito.productos.service.IProductoService;
-import co.edu.uptc.monolito.productos.model.Producto;
 import java.util.ArrayList;
 import java.util.List;
+
+import co.edu.uptc.monolito.pagos.service.IServicioPago;
+import co.edu.uptc.monolito.pedidos.model.Pedido;
+import co.edu.uptc.monolito.pedidos.persistence.PedidoPersistence;
+import co.edu.uptc.monolito.productos.model.Producto;
+import co.edu.uptc.monolito.productos.service.IProductoService;
+import co.edu.uptc.monolito.usuarios.model.Usuario;
+import co.edu.uptc.monolito.usuarios.service.IUsuarioService;
 
 public class PedidoService implements IPedidoService {
     private List<Pedido> pedidos;
     private PedidoPersistence persistence = new PedidoPersistence();
     private IUsuarioService usuarioService;
     private IProductoService productoService;
+    private IServicioPago pagoService;
 
-    public PedidoService(IUsuarioService usuarioService, IProductoService productoService) {
+    public PedidoService(IUsuarioService usuarioService, IProductoService productoService, IServicioPago pagoService) {
         this.pedidos = persistence.cargar();
         this.usuarioService = usuarioService;
         this.productoService = productoService;
+        this.pagoService = pagoService;
     }
 
     @Override
@@ -55,31 +59,35 @@ public class PedidoService implements IPedidoService {
         Pedido p = new Pedido(id, descripcion, idUsuario, total, estado);
         pedidos.add(p);
         persistence.guardar(p);
-        System.out.println("Pedido creado con producto #" + idProducto + " en módulo modular.");
+        System.out.println("Pedido creado con producto ID " + idProducto);
     }
 
+    
     @Override
     public void pagarPedido(int idPedido) {
         Pedido p = obtenerPorId(idPedido);
-        if (p == null) {
-            System.out.println("Pedido no encontrado.");
-            return;
-        }
-        if ("PAGADO".equals(p.estado)) {
-            System.out.println("El pedido ya está pagado.");
+        if (p == null || "PAGADO".equals(p.estado)) {
+            System.out.println("Pedido no encontrado o ya pagado.");
             return;
         }
 
         Usuario u = usuarioService.obtenerPorId(p.idUsuario);
         if (u != null && u.saldo >= p.total) {
+            // Restar saldo.
             usuarioService.actualizarSaldo(u.id, u.saldo - p.total);
+            
+            // cambiar el estado pues ya se pago.
             p.estado = "PAGADO";
             persistence.reescribir(pedidos);
-            System.out.println("Pedido pagado exitosamente.");
+
+            // se registra el pago en el modulo de pagos con un id aleatorio y con el id del pedido.
+            int idNuevoPago = (int)(Math.random() * 10000); 
+            pagoService.registrarPago(idNuevoPago, p.id, p.total, "Saldo_Usuario");
+
         } else {
-            System.out.println("No se pudo realizar el pago (saldo insuficiente o usuario no encontrado).");
+            System.out.println("Saldo insuficiente.");
         }
-    }
+}
 
     @Override
     public List<Pedido> obtenerTodos() {
@@ -95,7 +103,8 @@ public class PedidoService implements IPedidoService {
         return result;
     }
 
-    private Pedido obtenerPorId(int id) {
+    @Override
+    public Pedido obtenerPorId(int id) {
         for (Pedido p : pedidos) {
             if (p.id == id) return p;
         }

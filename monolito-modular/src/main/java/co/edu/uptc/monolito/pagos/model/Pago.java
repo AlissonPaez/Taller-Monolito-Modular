@@ -59,25 +59,14 @@ public class Pago {
     }
 
     public static Pago fromString(String line) {
-    String[] partes = line.split(";");
-    
-    int id = Integer.parseInt(partes[0]);
-    int idPedido = Integer.parseInt(partes[1]);
-    double monto = Double.parseDouble(partes[2]);
-    LocalDateTime fecha = LocalDateTime.parse(partes[3]);
-    String metodoPago = partes[4];
-    
-    return new Pago(id, idPedido, monto, fecha, metodoPago);
+    String[] partes = line.split(",");
+    return new Pago(Integer.parseInt(partes[0]), Integer.parseInt(partes[1]), Double.parseDouble(partes[2]), LocalDateTime.parse(partes[3]), partes[4]);
 }
 
-@Override
-public String toString() {
-    return id + ";" + 
-           idPedido + ";" + 
-           monto + ";" + 
-           fecha + ";" + 
-           metodoPago;
-}
+    @Override
+    public String toString() {
+        return id + "," +  idPedido + "," + monto + "," +  fecha + "," + metodoPago;
+    }
 
 
 }

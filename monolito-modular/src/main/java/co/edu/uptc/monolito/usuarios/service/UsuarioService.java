@@ -1,8 +1,9 @@
 package co.edu.uptc.monolito.usuarios.service;
 
+import java.util.List;
+
 import co.edu.uptc.monolito.usuarios.model.Usuario;
 import co.edu.uptc.monolito.usuarios.persistence.UsuarioPersistence;
-import java.util.List;
 
 public class UsuarioService implements IUsuarioService {
     private List<Usuario> usuarios;
@@ -21,14 +22,14 @@ public class UsuarioService implements IUsuarioService {
         Usuario nuevo = new Usuario(id, nombre, saldo);
         usuarios.add(nuevo);
         persistence.guardar(nuevo);
-        System.out.println("Usuario creado en módulo modular.");
+        System.out.println("Usuario creado.");
     }
 
     @Override
     public void eliminarUsuario(int id) {
         usuarios.removeIf(u -> u.id == id);
         persistence.reescribir(usuarios);
-        System.out.println("Usuario eliminado en módulo modular.");
+        System.out.println("Usuario eliminado.");
     }
 
     @Override
